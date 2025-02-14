@@ -1,17 +1,44 @@
-name: CI
+name: CI # Название workflow
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+on: # Определяем, когда запускать workflow
+  push: # Запускать при пуше
+    branches: [main] # Только в ветку main
+  pull_request: # Запускать при создании pull request
+    branches: [develop] # Только для ветки develop
 
-jobs:
-  start:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
+jobs: # Определяем задачи (jobs)
+  start: # Задача для проверки базового функционала
+    runs-on: ubuntu-latest # Запускается на машине с Ubuntu
+    steps: # Шаги для выполнения
+      - name: Checkout the code # Клонируем код из репозитория
+        uses: actions/checkout@v2 # Используем GitHub Action для клонирования
+
+      - name: Run sample script # Пример запуска скрипта
+        run: echo "Hello, world" # Печатаем "Hello, world" в консоль
+
+  instrumentation-test: # Задача для инструментальных тестов
+    name: Perform Instrumentation Testing # Название задачи
+    runs-on: macos-latest # Используем MacOS, так как эмулятор работает быстрее
+    steps: # Шаги для выполнения задачи
+      - name: Checkout the code # Клонируем репозиторий
         uses: actions/checkout@v2
 
-      - name: Run sample script
-        run: echo "Hello, world"
+      # Устанавливаем Java JDK версии 17 (необходим для Gradle 8.0.0)
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v1 # Используем официальное действие для настройки JDK
+        with:
+          java-version: '17' # Указываем версию JDK
+
+      # Запускаем инструментальные тесты с использованием Android Emulator
+      - name: Run espresso tests
+        uses: reactivecircus/android-emulator-runner@v2 # Используем Android Emulator Runner
+        with:
+          api-level: 29 # Указываем уровень API для эмулятора (Android 10)
+          script: ./gradlew connectedCheck # Выполняем команду для запуска тестов
+
+      # Загружаем отчёт об инструментальных тестах
+      - name: Upload Instrumentation Test report
+        uses: actions/upload-artifact@v2 # Действие для загрузки файлов
+        with:
+          name: instrumentation_test_report # Название артефакта (отчёта)
+          path: app/build/reports/androidTests/connected # Путь к отчёту

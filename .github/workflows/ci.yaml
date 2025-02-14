@@ -2,16 +2,16 @@ name: CI
 
 on:
   push:
-  branches: [main]
+    branches: [main]
   pull_request:
-  branches: [develop]
+    branches: [main]
 
-  jobs:
-    start:
+jobs:
+  start:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout the code
-    uses: actions/checkout@v2
+      - name: Checkout the code
+        uses: actions/checkout@v2
 
-    -name: Run sample script
-    uses: Hello, world
+      - name: Run sample script
+        run: echo "Hello, world"
